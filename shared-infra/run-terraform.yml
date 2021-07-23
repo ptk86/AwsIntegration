@@ -1,0 +1,23 @@
+pool:
+  vmImage: 'ubuntu-18.04'
+
+steps:
+- task: TerraformInstaller@0
+  inputs:
+    terraformVersion: '0.12.3'
+- task: TerraformTaskV2@2
+  inputs:
+    provider: 'aws'
+    command: 'init'
+    backendServiceAWS: 'Deployer'
+    backendAWSBucketName: 'kilinski-workshop-terraform-state'
+    backendAWSKey: '
+    
+- task: TerraformTaskV2@2
+  inputs:
+    provider: 'aws'
+    command: 'init'
+    workingDirectory: '$(System.DefaultWorkingDirectory)/shared-infra/'
+    backendServiceAWS: 'Deployer'
+    backendAWSBucketName: 'kilinski-workshop-terraform-state'
+    backendAWSKey: 'terraform.tfstate''
