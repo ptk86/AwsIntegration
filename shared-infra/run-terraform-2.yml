@@ -23,12 +23,16 @@ stages:
       services:
         localstack: localstack
       steps:
-      - script: |
-          aws configure set default.region eu-west-1
-          aws configure set aws_access_key_id test
-          aws configure set aws_secret_access_key test
-          aws --endpoint-url=http://localhost:$(AwsEndpointPort) firehose create-delivery-stream --delivery-stream-name test
+      - task: Bash@3
+        displayName: Configure Aws Cli
+        inputs:
+          targetType: 'inline'
+          script: |
+            aws configure set default.region eu-west-1
+            aws configure set aws_access_key_id test
+            aws configure set aws_secret_access_key test
       - task: DotNetCoreCLI@2
+        displayName: Test
         inputs:
           command: 'test'
           projects: '**/*IntegrationTests.csproj'
@@ -39,15 +43,18 @@ stages:
           codeCoverageTool: 'Cobertura'
           summaryFileLocation: '$(Agent.TempDirectory)/**/coverage.cobertura.xml'
       - task: DotNetCoreCLI@2
+        displayName: 'Publish Api'
         inputs:
           command: 'publish'
           publishWebProjects: true
           arguments: '--output $(Build.ArtifactStagingDirectory)'
       - task: CopyFiles@2
+        displayName: 'Copy terraform files'
         inputs:
           Contents: '**/*.tf'
           TargetFolder: '$(Build.ArtifactStagingDirectory)'
       - task: PublishBuildArtifacts@1
+        displayName: 'Publish artifacts'
         inputs:
           PathtoPublish: '$(Build.ArtifactStagingDirectory)'
           ArtifactName: 'Streaming'
