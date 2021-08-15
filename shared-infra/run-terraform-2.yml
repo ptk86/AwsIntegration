@@ -1,0 +1,36 @@
+variables:
+- name: AwsEndpointPort
+  value: 4566
+
+resources:
+  containers:
+  - container: localstack
+    image: localstack/localstack
+    ports:
+    - $(AwsEndpointPort):4566
+    env:
+        DEFAULT_REGION: eu-west-1
+
+pool:
+  vmImage: 'ubuntu-18.04'
+
+services:
+  localstack: localstack
+  
+steps:
+- script: |
+    aws configure set default.region eu-west-1
+    aws configure set aws_access_key_id test
+    aws configure set aws_secret_access_key test
+    aws --endpoint-url=http://localhost:$(AwsEndpointPort) firehose create-delivery-stream --delivery-stream-name test
+    echo $(System.DefaultWorkingDirectory)
+- task: DotNetCoreCLI@2
+  inputs:
+    command: 'test'
+    projects: '**/*IntegrationTests.csproj'
+    arguments: '--collect:"XPlat Code Coverage" -- DataCollectionRunSettings.DataCollectors.DataCollector.Configuration.Format=cobertura'
+- task: PublishCodeCoverageResults@1
+  displayName: 'Publish code coverage report'
+  inputs:
+    codeCoverageTool: 'Cobertura'
+    summaryFileLocation: '$(Agent.TempDirectory)/**/coverage.cobertura.xml'
