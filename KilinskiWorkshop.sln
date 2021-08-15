@@ -9,6 +9,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Module.Streaming", "Modules
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Module.Streaming.IntegrationTests", "Modules\Module.Streaming.IntegrationTests\Module.Streaming.IntegrationTests.csproj", "{E420B76F-7359-43AB-BCF3-388D1D170B96}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Streaming.Api", "Streaming.Api\Streaming.Api.csproj", "{48376FE9-A5FF-4E5D-9FCC-2F2ACA35DDDB}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -50,5 +52,17 @@ Global
 		{E420B76F-7359-43AB-BCF3-388D1D170B96}.Release|x64.Build.0 = Release|Any CPU
 		{E420B76F-7359-43AB-BCF3-388D1D170B96}.Release|x86.ActiveCfg = Release|Any CPU
 		{E420B76F-7359-43AB-BCF3-388D1D170B96}.Release|x86.Build.0 = Release|Any CPU
+		{48376FE9-A5FF-4E5D-9FCC-2F2ACA35DDDB}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{48376FE9-A5FF-4E5D-9FCC-2F2ACA35DDDB}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{48376FE9-A5FF-4E5D-9FCC-2F2ACA35DDDB}.Debug|x64.ActiveCfg = Debug|Any CPU
+		{48376FE9-A5FF-4E5D-9FCC-2F2ACA35DDDB}.Debug|x64.Build.0 = Debug|Any CPU
+		{48376FE9-A5FF-4E5D-9FCC-2F2ACA35DDDB}.Debug|x86.ActiveCfg = Debug|Any CPU
+		{48376FE9-A5FF-4E5D-9FCC-2F2ACA35DDDB}.Debug|x86.Build.0 = Debug|Any CPU
+		{48376FE9-A5FF-4E5D-9FCC-2F2ACA35DDDB}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{48376FE9-A5FF-4E5D-9FCC-2F2ACA35DDDB}.Release|Any CPU.Build.0 = Release|Any CPU
+		{48376FE9-A5FF-4E5D-9FCC-2F2ACA35DDDB}.Release|x64.ActiveCfg = Release|Any CPU
+		{48376FE9-A5FF-4E5D-9FCC-2F2ACA35DDDB}.Release|x64.Build.0 = Release|Any CPU
+		{48376FE9-A5FF-4E5D-9FCC-2F2ACA35DDDB}.Release|x86.ActiveCfg = Release|Any CPU
+		{48376FE9-A5FF-4E5D-9FCC-2F2ACA35DDDB}.Release|x86.Build.0 = Release|Any CPU
 	EndGlobalSection
 EndGlobal
