@@ -11,6 +11,11 @@ nupkg/
 # Rider
 .idea
 
+#terraform
+.terraform
+*.tfstate
+*.tfstate.backup
+
 # User-specific files
 *.suo
 *.user

@@ -18,7 +18,7 @@ namespace Module.Streaming.Infrastructure.Configuration
             };
             services.AddDefaultAWSOptions(awsOptions);
             services.AddAWSService<IAmazonKinesisFirehose>();
-            services.AddTransient<FirehoseWrapper>();
+            services.AddSingleton<FirehoseWrapper>();
             services.AddSingleton(new FirehoseWrapper.Config(deliveryStreamName));
 ;
             CompositionRoot.SetContainer(services.BuildServiceProvider());
