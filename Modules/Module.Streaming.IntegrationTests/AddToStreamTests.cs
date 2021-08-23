@@ -12,51 +12,69 @@ using AutoFixture;
 using Microsoft.Extensions.Configuration;
 using Module.Streaming.Application;
 using Module.Streaming.Infrastructure.Configuration;
+using Shouldly;
 using Xunit;
 
 namespace Module.Streaming.IntegrationTests
 {
-    public class AddToStreamTests
+    public class AddToStreamTests : IAsyncLifetime
     {
+        private AmazonS3Client _s3Client;
+        private string _bucketName;
+        private string _roleName;
+        private string _deliveryStreamName;
+
         [Fact]
         public async Task CorrectlyAddedToStream()
         {
-            var awsEndpoint = $"http://localhost:{Environment.GetEnvironmentVariable("AwsEndpointPort")}";
-            var bucketName = await SetupBucket(awsEndpoint);
-            var roleName = await SetupFirehoseRole(awsEndpoint);
-            var deliveryStreamName = await SetupFirehose(awsEndpoint, bucketName, roleName);
-            Startup.Initialize(awsEndpoint, deliveryStreamName);
-            
+            //arrange
             var test = new
             {
                 Test = "Hello World1"
             };
             
+            //act
             await Streaming.Infrastructure.Configuration.Module.Execute(new AddToStream.Request
             {
                 Payload = test
             });
+
+            //assert
+            var listObjectsResponse = await _s3Client.ListObjectsAsync(new ListObjectsRequest
+            {
+                BucketName = _bucketName
+            });
+            var s3Object = listObjectsResponse.S3Objects.FirstOrDefault();
+            var getObjectResponse = await _s3Client.GetObjectAsync(new GetObjectRequest
+            {
+                Key = s3Object.Key,
+                BucketName = _bucketName
+            });    
+            StreamReader reader = new StreamReader( getObjectResponse.ResponseStream );
+            string jsonFromTheBucket = await reader.ReadToEndAsync();
+            
+            listObjectsResponse.S3Objects.Count.ShouldBe(1);
+            jsonFromTheBucket.ShouldBe("{\"Test\":\"Hello World1\"}");
         }
 
-        private async Task<string> SetupBucket(string awsEndpoint)
+        private async Task SetupBucket(string awsEndpoint)
         {
             var fixture = new Fixture();
-            var bucketName = fixture.Create<string>();
+            _bucketName = fixture.Create<string>();
             
-            var s3Client = new AmazonS3Client(new AmazonS3Config
+            _s3Client = new AmazonS3Client(new AmazonS3Config
             {
                 ServiceURL = awsEndpoint,
                 ForcePathStyle = true
             });
             
-            await s3Client.PutBucketAsync(new PutBucketRequest()
+            await _s3Client.PutBucketAsync(new PutBucketRequest()
             {
-                BucketName = bucketName
+                BucketName = _bucketName
             });
-            return bucketName;
         }
 
-        private async Task<string> SetupFirehoseRole(string endpoint)
+        private async Task SetupFirehoseRole(string endpoint)
         {
             var configuration = new ConfigurationBuilder()
                 .SetBasePath(Directory.GetCurrentDirectory())
@@ -73,21 +91,20 @@ namespace Module.Streaming.IntegrationTests
                 ServiceURL = endpoint
             });
 
+            _roleName = roleName;
             await identityManagementClient.CreateRoleAsync(new CreateRoleRequest
             {
-                RoleName = roleName
+                RoleName = _roleName
             });
             
             await identityManagementClient.PutRolePolicyAsync(new PutRolePolicyRequest
             {
-                RoleName = roleName,
+                RoleName = _roleName,
                 PolicyDocument = policyString
             });
-
-            return roleName;
         }
 
-        private async Task<string> SetupFirehose(string endpoint, string bucketName, string roleName)
+        private async Task SetupFirehose(string endpoint, string bucketName, string roleName)
         {
             var fixture = new Fixture();
             var deliveryStreamName =  fixture.Create<string>();
@@ -97,17 +114,34 @@ namespace Module.Streaming.IntegrationTests
                 ServiceURL = endpoint
             });
 
+            _deliveryStreamName = deliveryStreamName;
             await amazonKinesisFirehoseClient.CreateDeliveryStreamAsync(new CreateDeliveryStreamRequest
             {
-                DeliveryStreamName = deliveryStreamName,
+                DeliveryStreamName = _deliveryStreamName,
                 ExtendedS3DestinationConfiguration = new ExtendedS3DestinationConfiguration
                 {
                     BucketARN = $"arn:aws:s3:::{bucketName}",
                     RoleARN = $"arn:aws:iam::000000000000:role/{roleName}"
                 }
             });
-            
-            return deliveryStreamName;
+        }
+
+        public async Task InitializeAsync()
+        {
+            var awsEndpoint = $"http://localhost:{Environment.GetEnvironmentVariable("AwsEndpointPort")}";
+            await SetupBucket(awsEndpoint);
+            await SetupFirehoseRole(awsEndpoint);
+            await SetupFirehose(awsEndpoint, _bucketName, _roleName);
+            Startup.Initialize(awsEndpoint, _deliveryStreamName);
+        }
+
+        public Task DisposeAsync()
+        {
+            _s3Client.Dispose();
+            _bucketName = null;
+            _roleName = null;
+            _deliveryStreamName = null;
+            return Task.CompletedTask;
         }
     }
 }

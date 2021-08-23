@@ -15,6 +15,7 @@ nupkg/
 .terraform
 *.tfstate
 *.tfstate.backup
+*.hcl
 
 # User-specific files
 *.suo
