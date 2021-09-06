@@ -7,6 +7,7 @@
     <ItemGroup>
       <PackageReference Include="AWSSDK.Extensions.NETCore.Setup" Version="3.7.1" />
       <PackageReference Include="AWSSDK.KinesisFirehose" Version="3.7.0.49" />
+      <PackageReference Include="AWSSDK.SecurityToken" Version="3.7.1.51" />
       <PackageReference Include="MediatR.Extensions.Microsoft.DependencyInjection" Version="9.0.0" />
       <PackageReference Include="Microsoft.Extensions.DependencyInjection" Version="3.1.18" />
       <PackageReference Include="Microsoft.Extensions.DependencyInjection.Abstractions" Version="3.1.18" />

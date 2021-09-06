@@ -24,7 +24,7 @@ namespace Module.Streaming.Infrastructure
             await using var ms = new MemoryStream(oByte);
             var requestRecord = new PutRecordRequest
             {
-                DeliveryStreamName = _config.FirehoseDeliveryStreamName, Record = new Record {Data = ms}
+                DeliveryStreamName = _config.FirehoseDeliveryStreamName, Record = new Record {Data = ms},
             };
             var putRecordResponse = await _firehose.PutRecordAsync(requestRecord);
         }

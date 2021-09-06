@@ -1,6 +1,10 @@
 using System.Threading.Tasks;
+using Amazon;
 using Amazon.Extensions.NETCore.Setup;
 using Amazon.KinesisFirehose;
+using Amazon.Runtime;
+using Amazon.SecurityToken;
+using Amazon.SecurityToken.Model;
 using MediatR;
 using Microsoft.Extensions.DependencyInjection;
 
@@ -8,14 +12,29 @@ namespace Module.Streaming.Infrastructure.Configuration
 {
     public class Startup
     {
-        public static void Initialize(string awsEndpoint, string deliveryStreamName)
+        public static async Task Initialize(string awsEndpoint, string deliveryStreamName, string roleToAssume = null)
         {
             var services = new ServiceCollection();
             services.AddMediatR(typeof(Startup).Assembly);
-            var awsOptions = new AWSOptions
+
+            var awsOptions = new AWSOptions();
+            if (!string.IsNullOrEmpty(awsEndpoint))
             {
-                DefaultClientConfig = {ServiceURL = awsEndpoint}
-            };
+                awsOptions.DefaultClientConfig.ServiceURL = awsEndpoint;
+            }
+            
+            if (!string.IsNullOrEmpty(roleToAssume))
+            {
+                var stsClient = new AmazonSecurityTokenServiceClient();
+                var assumeRoleReq = new AssumeRoleRequest
+                {
+                    RoleArn = roleToAssume,
+                    RoleSessionName = "session"
+                };
+                var response = await stsClient.AssumeRoleAsync(assumeRoleReq);
+                awsOptions.Credentials = response.Credentials;
+            }
+            
             services.AddDefaultAWSOptions(awsOptions);
             services.AddAWSService<IAmazonKinesisFirehose>();
             services.AddSingleton<FirehoseWrapper>();
